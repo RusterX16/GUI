@@ -24,71 +24,20 @@ public class GUI {
     private GUI nextGUI;
 
     /**
-     * Create a GUI inventory for a player with a previous GUI and a next GUI
-     *
-     * @param name        The name displayed at the top of the inventory
-     * @param rows        The number of row of the inventory : between 1 and 6
-     * @param owner       The owner of the inventory
-     * @param previousGUI The GUI that come before this GUI
-     * @param nextGUI     The GUI that come after this GUI
-     */
-    @SuppressWarnings("deprecation")
-    public GUI(String name, int rows, Player owner, GUI previousGUI, GUI nextGUI) {
-        if(rows < 0 || rows > 6) {
-            throw new IllegalArgumentException("GUI must contain between 1 and 6 rows");
-        }
-        this.name = name;
-        this.size = rows * 9;
-        this.owner = owner;
-        this.previousGUI = previousGUI;
-        this.nextGUI = nextGUI;
-        inventory = Bukkit.createInventory(owner, size, name);
-    }
-
-    /**
-     * Create a new GUI inventory with a previous GUI and a next GUI
-     *
-     * @param name        The name displayed at the top of the inventory
-     * @param rows        The number of row of the inventory : between 1 and 6
-     * @param previousGUI The GUI that come before this GUI
-     * @param nextGUI     The GUI that come after this GUI
-     */
-    public GUI(String name, int rows, GUI previousGUI, GUI nextGUI) {
-        this(name, rows, null, previousGUI, nextGUI);
-    }
-
-    /**
-     * Create a new GUI inventory for a player with a previous GUI
-     *
-     * @param name        The name displayed at the top of the inventory
-     * @param rows        The number of row of the inventory : between 1 and 6
-     * @param owner       The owner of the inventory
-     * @param previousGUI The GUI that come before this GUI
-     */
-    public GUI(String name, int rows, Player owner, GUI previousGUI) {
-        this(name, rows, owner, previousGUI, null);
-    }
-
-    /**
      * Create a new GUI inventory for a player
      *
      * @param name  The name displayed at the top of the inventory
      * @param rows  The number of row of the inventory : between 1 and 6
      * @param owner The owner of the inventory
      */
+    @Contract(pure = true)
     public GUI(String name, int rows, Player owner) {
-        this(name, rows, owner, null);
-    }
-
-    /**
-     * Create a new GUI inventory
-     *
-     * @param name        The name displayed at the top of the inventory
-     * @param rows        The number of row of the inventory : between 1 and 6
-     * @param previousGUI The GUI that come before this GUI
-     */
-    public GUI(String name, int rows, GUI previousGUI) {
-        this(name, rows, previousGUI, null);
+        if(rows < 0 || rows > 6) {
+            throw new IllegalArgumentException("GUI must contain between 1 and 6 rows");
+        }
+        this.name = name;
+        this.size = rows * 9;
+        inventory = Bukkit.createInventory(owner, size, name);
     }
 
     /**
@@ -97,8 +46,9 @@ public class GUI {
      * @param name The name displayed at the top of the inventory
      * @param rows The number of rows of the inventory : between 1 and 6
      */
+    @Contract(pure = true)
     public GUI(String name, int rows) {
-        this(name, rows, (Player) null);
+        this(name, rows, null);
     }
 
     /**
@@ -149,7 +99,7 @@ public class GUI {
         }
         for(int i : slots) {
             if(i < 0 || i > size) {
-                throw new ArrayIndexOutOfBoundsException("slot is out of gui bounds");
+                throw new ArrayIndexOutOfBoundsException("slot is out of bounds");
             }
             inventory.setItem(i, item);
         }
@@ -163,6 +113,16 @@ public class GUI {
      */
     public void set(Material material, int... slots) {
         set(new ItemStack(material), slots);
+    }
+
+    /**
+     * Check if the GUI contains an item
+     *
+     * @param item The item to check
+     * @return True if the GUI contains the item
+     */
+    public boolean contains(ItemStack item) {
+        return inventory.contains(item);
     }
 
     public void fill(int start, int end, ItemStack[] items, boolean override) {
@@ -179,10 +139,24 @@ public class GUI {
         }
     }
 
+    /**
+     * Fill the inventory with item type array from a start index to an end index
+     *
+     * @param start The start index
+     * @param end   The end index
+     * @param items The ItemStack array to fill
+     */
     public void fill(int start, int end, ItemStack[] items) {
         fill(start, end, items, false);
     }
 
+    /**
+     * Fill the inventory with item type array on slots contains in an array
+     *
+     * @param slots    The array of index to place
+     * @param items    The ItemStack array to fill
+     * @param override Override if an item is already present
+     */
     public void fill(int @NotNull [] slots, ItemStack[] items, boolean override) {
         if(slots.length == 0 || !override) {
             return;
@@ -190,10 +164,24 @@ public class GUI {
         Arrays.stream(slots).forEach(i -> Arrays.stream(items).forEach(it -> set(it, i)));
     }
 
+    /**
+     * Fill the inventory with item type array on slots contains in an array
+     *
+     * @param slots The array of index to place
+     * @param items The ItemStack array to fill
+     */
     public void fill(int @NotNull [] slots, ItemStack[] items) {
         fill(slots, items, false);
     }
 
+    /**
+     * Fill the inventory with an item from a start index to an end index
+     *
+     * @param start    The start index
+     * @param end      The end index
+     * @param item     The item to fill with
+     * @param override Override if an item is already present
+     */
     public void fill(int start, int end, ItemStack item, boolean override) {
         if(!override) {
             return;
@@ -201,10 +189,24 @@ public class GUI {
         fill(start, end, new ItemStack[]{item});
     }
 
+    /**
+     * Fill the inventory with an item from a start index to an end index
+     *
+     * @param start The start index
+     * @param end   The end index
+     * @param item  The item to fill with
+     */
     public void fill(int start, int end, ItemStack item) {
         fill(start, end, new ItemStack[]{item}, false);
     }
 
+    /**
+     * Fill the inventory with an item on index contains in an array
+     *
+     * @param slots    The array of index
+     * @param item     The item to fill with
+     * @param override Override if an item is already present
+     */
     public void fill(int @NotNull [] slots, ItemStack item, boolean override) {
         if(!override) {
             return;
@@ -212,26 +214,56 @@ public class GUI {
         fill(slots, new ItemStack[]{item});
     }
 
+    /**
+     * Fill the inventory on index contains in an array
+     *
+     * @param slots The array of index
+     * @param item  The item to fill with
+     */
     public void fill(int @NotNull [] slots, ItemStack item) {
         fill(slots, new ItemStack[]{item}, false);
     }
 
     /**
-     * Place items in a straight horizontal line of the GUI
+     * Place items in a straight horizontal line in the GUI
      *
      * @param row      The row where to place the items
-     * @param item     The item to place 6 times
-     * @param override Replace existing items if not null
+     * @param items    The item to place 9 times
+     * @param override Replace existing items if no null
      */
-    public void horizontalFill(int row, ItemStack item, boolean override) {
+    public void horizontalFill(int row, ItemStack[] items, boolean override) {
         if(row < 0 || row > 5) {
             throw new IllegalArgumentException("Row must be between 0 and 5");
         }
-        fill(row * 9, row * 9 + 9, item, override);
+        fill(row * 9, row * 9 + 9, items, override);
     }
 
     /**
-     * Place items in a straight horizontal line of the GUI
+     * Place items in a straight horizontal line in the GUI
+     *
+     * @param row   The row where to place the items
+     * @param items The item to place 9 times
+     */
+    public void horizontalFill(int row, ItemStack[] items) {
+        horizontalFill(row, items, false);
+    }
+
+    /**
+     * Place items in a straight horizontal line in the GUI
+     *
+     * @param row      The row where to place the items
+     * @param item     The item to place 9 times
+     * @param override Replace existing items if not null
+     */
+    public void horizontalFill(int row, ItemStack item, boolean override) {
+        ItemStack[] array = new ItemStack[9];
+        Arrays.stream(array).forEach(i -> i = item);
+
+        horizontalFill(row, array, override);
+    }
+
+    /**
+     * Place items in a straight horizontal line in the GUI
      *
      * @param row  The row where to place the items
      * @param item The items to place 6 times
@@ -241,25 +273,51 @@ public class GUI {
     }
 
     /**
-     * Place items in a straight vertical line of the GUI
+     * Place items in a straight vertical line in the GUI
      *
      * @param column   The column where to place the items
-     * @param item     The item to place 8 times
+     * @param items    The array of items to place.<br>
+     *                 Will place the first 6 items at maximum and ignore the last items after the 6th index.
      * @param override Replace existing items if not null
      */
-    public void verticalFill(int column, ItemStack item, boolean override) {
+    public void verticalFill(int column, ItemStack[] items, boolean override) {
         if(column < 0 || column > 7) {
             throw new IllegalArgumentException("Column must be between 0 and 7");
         }
         for(int i = column; i < 6; i += 9) {
             if(isEmpty(i) || override) {
-                set(item, i);
+                set(items[i], i);
             }
         }
     }
 
     /**
-     * Place items in a straight vertical line of the GUI
+     * Place items in a straight vertical line in the GUI
+     *
+     * @param column The column where to place the items
+     * @param items  The array of items to place.<br>
+     *               Will place the first 6 items at maximum and ignore the last items after the 6th index.
+     */
+    public void verticalFill(int column, ItemStack[] items) {
+        verticalFill(column, items, false);
+    }
+
+    /**
+     * Place items in a straight vertical line in the GUI
+     *
+     * @param column   The column where to place the items
+     * @param item     The item to place 6 times
+     * @param override Replace existing items if not null
+     */
+    public void verticalFill(int column, ItemStack item, boolean override) {
+        ItemStack[] array = new ItemStack[size / 6];
+        Arrays.stream(array).forEach(i -> i = item);
+
+        verticalFill(column, array, override);
+    }
+
+    /**
+     * Place items in a straight vertical line in the GUI
      *
      * @param column The column where to place the items
      * @param item   The item to place 8 times
@@ -303,8 +361,19 @@ public class GUI {
     }
 
     /**
-     * Get the slots where an item is present.
-     * Will be empty if your item is not present
+     * Get the first slot where an item is present .<br>
+     *
+     * @param item The item you want to get slot at
+     * @return The slot where the item is placed.<br>
+     * Will return -1 if absent.
+     */
+    public int getSlot(ItemStack item) {
+        return getSlots(item).stream().findFirst().orElse(-1);
+    }
+
+    /**
+     * Get the slots where an item is present.<br>
+     * Will be empty if your item is not present in the GUI.
      *
      * @param item The item you want to get slots at
      * @return A set of the slots where the item is placed
@@ -313,6 +382,16 @@ public class GUI {
         Set<Integer> slots = new HashSet<>();
 
         IntStream.range(0, size).filter(i -> item == getItem(i)).forEach(slots::add);
+        return slots;
+    }
+
+    public Set<Integer> getSlots(ItemStack[] items) {
+        Set<Integer> slots = new HashSet<>();
+
+        IntStream.range(0, size).filter(i -> {
+            boolean b = getItem(i) == Arrays.stream(items).filter(is -> is == getItem(i)).findFirst().get();
+            return b;
+        }).forEach(slots::add);
         return slots;
     }
 
@@ -359,7 +438,7 @@ public class GUI {
      *
      * @param player The player to open the next GUI
      */
-    public void openNextGUI(Player player) {
+    public void openNextGUI(@NotNull Player player) {
         if(nextGUI == null) {
             throw new NullPointerException("Next GUI is null");
         }
@@ -381,7 +460,7 @@ public class GUI {
     }
 
     /**
-     * Check if the GUI contains no items
+     * Check if the entier GUI contains is empty or not
      *
      * @return Empty or not
      */
@@ -390,7 +469,7 @@ public class GUI {
     }
 
     /**
-     * Check if a slot is empty or not
+     * Check if a slot of the GUI is empty or not
      *
      * @param slot The slot where to check
      * @return The slot is empty or not
@@ -400,35 +479,77 @@ public class GUI {
         return item == null || item.getType() == Material.AIR;
     }
 
+    /**
+     * Close the GUI for the owner
+     */
+    public void close() {
+        if(owner == null) {
+            throw new NullPointerException("Owner of the GUI is null");
+        }
+        close(owner);
+    }
+
+    /**
+     * Close the GUI to a specific player
+     * @param player The player to close the GUI
+     */
+    public void close(@NotNull Player player) {
+        player.closeInventory();
+    }
+
+    /**
+     * @return The GUI name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The GUI size
+     */
     public int getSize() {
         return size;
     }
 
-    public void setOwner(Player owner) {
-        this.owner = owner;
-    }
-
+    /**
+     * @return The GUI owner
+     */
     public Player getOwner() {
         return owner;
     }
 
-    public void setPreviousGUI(GUI previousGUI) {
-        this.previousGUI = previousGUI;
+    /**
+     * @param owner The GUI owner
+     */
+    public void setOwner(Player owner) {
+        this.owner = owner;
     }
 
+    /**
+     * @return The previous GUI
+     */
     public GUI getPreviousGUI() {
         return previousGUI;
     }
 
-    public void setNextGUI(GUI nextGUI) {
-        this.nextGUI = nextGUI;
+    /**
+     * @param previousGUI The previous GUI
+     */
+    public void setPreviousGUI(GUI previousGUI) {
+        this.previousGUI = previousGUI;
     }
 
+    /**
+     * @return The next GUI
+     */
     public GUI getNextGUI() {
         return nextGUI;
+    }
+
+    /**
+     * @param nextGUI The next GUI
+     */
+    public void setNextGUI(GUI nextGUI) {
+        this.nextGUI = nextGUI;
     }
 }
