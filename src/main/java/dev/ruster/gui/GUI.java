@@ -37,6 +37,7 @@ public class GUI {
         }
         this.name = name;
         this.size = rows * 9;
+        this.owner = owner;
         inventory = Bukkit.createInventory(owner, size, name);
     }
 
@@ -222,6 +223,28 @@ public class GUI {
      */
     public void fill(int @NotNull [] slots, ItemStack item) {
         fill(slots, new ItemStack[]{item}, false);
+    }
+
+    /**
+     * Fill the whole inventory of a given item
+     * @param item The item to fill with
+     * @param override Override if an item is already present
+     */
+    public void fill(ItemStack item, boolean override) {
+        if(!override) {
+            return;
+        }
+        for(int i = 0; i < size; i++) {
+            set(item, i);
+        }
+    }
+
+    /**
+     * Fill the whole inventory of a given item
+     * @param item The item to fill with
+     */
+    public void fill(ItemStack item) {
+        fill(item, false);
     }
 
     /**
@@ -495,6 +518,20 @@ public class GUI {
      */
     public void close(@NotNull Player player) {
         player.closeInventory();
+    }
+
+    /**
+     * @return The last index of the GUI
+     */
+    public int lastIndex() {
+        return size - 1;
+    }
+
+    /**
+     * @return The Bukkit Inventory
+     */
+    public Inventory getInventory() {
+        return inventory;
     }
 
     /**
