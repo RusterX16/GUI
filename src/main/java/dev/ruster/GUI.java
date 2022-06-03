@@ -1,4 +1,4 @@
-package dev.ruster.gui;
+package dev.ruster;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -24,7 +24,7 @@ public class GUI {
     private GUI nextGUI;
 
     /**
-     * Create a new GUI inventory for a player
+     * Create a new GUI inventory for a owner
      *
      * @param name  The name displayed at the top of the inventory
      * @param rows  The number of row of the inventory : between 1 and 6
@@ -35,10 +35,12 @@ public class GUI {
         if(rows < 0 || rows > 6) {
             throw new IllegalArgumentException("GUI must contain between 1 and 6 rows");
         }
+        if(owner != null) {
+            this.owner = owner;
+        }
         this.name = name;
         this.size = rows * 9;
-        this.owner = owner;
-        inventory = Bukkit.createInventory(owner, size, name);
+        inventory = Bukkit.createInventory(null, size, name);
     }
 
     /**
@@ -96,7 +98,7 @@ public class GUI {
      */
     public void set(ItemStack item, int @NotNull ... slots) {
         if(item == null || item.getType() == Material.AIR) {
-            throw new IllegalArgumentException("Use remove method to remove an item from inventory");
+            throw new NullPointerException("Item is null");
         }
         for(int i : slots) {
             if(i < 0 || i > size) {
@@ -127,15 +129,14 @@ public class GUI {
     }
 
     public void fill(int start, int end, ItemStack[] items, boolean override) {
-        if(!override) {
-            return;
-        }
         if(start < 0 || start >= size || end >= size || end < 0) {
             throw new ArrayIndexOutOfBoundsException("Index out of bound");
         }
         for(int i = Math.min(start, end); i < Math.max(start, end); i++) {
-            for(ItemStack is : items) {
-                set(is, i);
+            for(ItemStack it : items) {
+                if(override) {
+                    inventory.setItem(i, it);
+                }
             }
         }
     }
@@ -159,10 +160,10 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int @NotNull [] slots, ItemStack[] items, boolean override) {
-        if(slots.length == 0 || !override) {
+        if(slots.length == 0) {
             return;
         }
-        Arrays.stream(slots).forEach(i -> Arrays.stream(items).forEach(it -> set(it, i)));
+        Arrays.stream(slots).filter(i -> override).forEach(i -> Arrays.stream(items).forEach(it -> set(it, i)));
     }
 
     /**
@@ -231,11 +232,10 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(ItemStack item, boolean override) {
-        if(!override) {
-            return;
-        }
         for(int i = 0; i < size; i++) {
-            set(item, i);
+            if(isEmpty(i) || override) {
+                set(item, i);
+            }
         }
     }
 
