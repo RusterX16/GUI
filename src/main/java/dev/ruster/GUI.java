@@ -14,13 +14,39 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+/**
+ * <p><strong>Please do not remove these lines !!</strong></p>
+ * <p>GUI is a tiny Java API for Spigot and Paper made to build inventory easier</p>
+ * <p>You're free to use and contribute to this project</p>
+ * <p>For any question, bug or info, contact me from my GitHub down below</p>
+ * @author RusterX16
+ * @link <a href="https://gitub.com/rusterx16/GUI">github</a>
+ */
 public class GUI {
 
+    /**
+     * The bukkit inventory instance
+     */
     private final Inventory inventory;
+    /**
+     * The name displayed at the top of the inventory
+     */
     private final String name;
+    /**
+     * The inventory size in [9, 18, 27, 36, 45, 54]
+     */
     private final int size;
+    /**
+     * The player owner of the inventory. Null means that the inventory doesn't have an owner
+     */
     private Player owner;
+    /**
+     * The GUI that comes before this
+     */
     private GUI previousGUI;
+    /**
+     * The GUI that comes after this
+     */
     private GUI nextGUI;
 
     /**
