@@ -9,9 +9,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -24,6 +22,10 @@ import java.util.stream.IntStream;
  */
 public class GUI {
 
+    /**
+     * A static List of GUI that contains all GUI instance to recover instances from inventories
+     */
+    private static final List<GUI> GUI_LIST = new LinkedList<>();
     /**
      * The bukkit inventory instance
      */
@@ -67,6 +69,7 @@ public class GUI {
         this.name = name;
         this.size = rows * 9;
         inventory = Bukkit.createInventory(null, size, name);
+        GUI_LIST.add(this);
     }
 
     /**
@@ -93,6 +96,14 @@ public class GUI {
         this.size = gui.size;
         this.previousGUI = gui.previousGUI;
         this.nextGUI = gui.nextGUI;
+        GUI_LIST.add(this);
+    }
+
+    public static GUI getFromInventory(@NotNull Inventory inventory) {
+        return GUI_LIST.stream()
+                .filter(gui -> gui.inventory.equals(inventory))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -254,7 +265,8 @@ public class GUI {
 
     /**
      * Fill the whole inventory of a given item
-     * @param item The item to fill with
+     *
+     * @param item     The item to fill with
      * @param override Override if an item is already present
      */
     public void fill(ItemStack item, boolean override) {
@@ -267,6 +279,7 @@ public class GUI {
 
     /**
      * Fill the whole inventory of a given item
+     *
      * @param item The item to fill with
      */
     public void fill(ItemStack item) {
@@ -389,7 +402,7 @@ public class GUI {
     }
 
     /**
-     * Remove items from the inventory by an array of ItemStack given
+     * Remove items from the inventory by a given array of ItemStack
      *
      * @param items The items you want to remove
      */
@@ -437,10 +450,7 @@ public class GUI {
     public Set<Integer> getSlots(ItemStack[] items) {
         Set<Integer> slots = new HashSet<>();
 
-        IntStream.range(0, size).filter(i -> {
-            boolean b = getItem(i) == Arrays.stream(items).filter(is -> is == getItem(i)).findFirst().get();
-            return b;
-        }).forEach(slots::add);
+        IntStream.range(0, size).filter(i -> getItem(i) == Arrays.stream(items).filter(is -> is == getItem(i)).findFirst().orElse(null)).forEach(slots::add);
         return slots;
     }
 
@@ -540,6 +550,7 @@ public class GUI {
 
     /**
      * Close the GUI to a specific player
+     *
      * @param player The player to close the GUI
      */
     public void close(@NotNull Player player) {
@@ -572,6 +583,13 @@ public class GUI {
      */
     public int getSize() {
         return size;
+    }
+
+    /**
+     * @return All the items contained in the inventory
+     */
+    public ItemStack[] getContent() {
+        return inventory.getContents();
     }
 
     /**

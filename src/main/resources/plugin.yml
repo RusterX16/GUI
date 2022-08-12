@@ -1,6 +1,6 @@
 name: GUI
 version: '${project.version}'
-main: dev.ruster.gui.GUI
+main: dev.ruster.GUI
 api-version: 1.18
 authors: [ Ruster ]
 description: A simple API to use inentories in Minecraft
