@@ -33,7 +33,20 @@ public class GUI {
     /**
      * A static List of GUI that contains all GUI instance to recover instances from inventories
      */
-    private static final List<GUI> GUI_LIST = new LinkedList<>();
+    public static final List<GUI> GUI_LIST = new LinkedList<>();
+
+    /**
+     * Get the instance of GUI that match with a given inventory in parameter
+     * 
+     * @param inventory The inventory to get the GUI from
+     * @return          The instance of GUI if matches, null otherwise
+     */
+    public static GUI getFromInventory(@NotNull Inventory inventory) {
+        return GUI_LIST.stream()
+                .filter(gui -> gui.inventory.equals(inventory))
+                .findFirst()
+                .orElse(null);
+    }
     /**
      * The bukkit inventory instance
      */
@@ -54,6 +67,7 @@ public class GUI {
      * The GUI that comes before this
      */
     @Setter private GUI previousGUI;
+
     /**
      * The GUI that comes after this
      */
@@ -105,13 +119,6 @@ public class GUI {
         this.previousGUI = gui.previousGUI;
         this.nextGUI = gui.nextGUI;
         GUI_LIST.add(this);
-    }
-
-    public static GUI getFromInventory(@NotNull Inventory inventory) {
-        return GUI_LIST.stream()
-                .filter(gui -> gui.inventory.equals(inventory))
-                .findFirst()
-                .orElse(null);
     }
 
     /**
