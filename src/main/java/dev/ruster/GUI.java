@@ -3,6 +3,8 @@ package dev.ruster;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
@@ -60,6 +62,10 @@ public class GUI {
      */
     private final int size;
     /**
+     * The number of rows of the inventory
+     */
+    private final int rows;
+    /**
      * The player owner of the inventory. Null means that the inventory doesn't have an owner
      */
     @Setter private Player owner;
@@ -89,7 +95,8 @@ public class GUI {
             this.owner = owner;
         }
         this.name = name;
-        this.size = rows * 9;
+        this.rows = rows;
+        size = rows * 9;
         inventory = Bukkit.createInventory(owner, size, name);
         GUI_LIST.add(this);
     }
@@ -112,12 +119,13 @@ public class GUI {
      */
     @Contract(pure = true)
     public GUI(@NotNull GUI gui) {
-        this.inventory = gui.inventory;
-        this.owner = gui.owner;
-        this.name = gui.name;
-        this.size = gui.size;
-        this.previousGUI = gui.previousGUI;
-        this.nextGUI = gui.nextGUI;
+        inventory = gui.inventory;
+        owner = gui.owner;
+        name = gui.name;
+        size = gui.size;
+        rows = gui.rows;
+        previousGUI = gui.previousGUI;
+        nextGUI = gui.nextGUI;
         GUI_LIST.add(this);
     }
 
@@ -220,7 +228,7 @@ public class GUI {
         }
         for(int i = Math.min(start, end); i < Math.max(start, end); i += step) {
             for(ItemStack it : items) {
-                if(get(i) != null && !override) {
+                if(!isEmpty(i) && !override) {
                     continue;
                 }
                 set(it, i);
@@ -377,7 +385,7 @@ public class GUI {
      * @param items The item to place 9 times
      */
     public void horizontalFill(int row, ItemStack[] items) {
-        horizontalFill(row, items, false);
+        horizontalFill(row, items, true);
     }
 
     /**
@@ -401,7 +409,7 @@ public class GUI {
      * @param item The items to place 6 times
      */
     public void horizontalFill(int row, ItemStack item) {
-        horizontalFill(row, item, false);
+        horizontalFill(row, item, true);
     }
 
     /**
@@ -416,11 +424,7 @@ public class GUI {
         if(column < 0 || column > 7) {
             throw new IllegalArgumentException("Column must be between 0 and 7");
         }
-        for(int i = column; i < 6; i += 9) {
-            if(isEmpty(i) || override) {
-                set(items[i], i);
-            }
-        }
+        fill(column, column * 9 * rows, 9, items, override);
     }
 
     /**
@@ -431,7 +435,7 @@ public class GUI {
      *               Will place the first 6 items at maximum and ignore the last items after the 6th index.
      */
     public void verticalFill(int column, ItemStack[] items) {
-        verticalFill(column, items, false);
+        verticalFill(column, items, true);
     }
 
     /**
@@ -455,7 +459,7 @@ public class GUI {
      * @param item   The item to place 8 times
      */
     public void verticalFill(int column, ItemStack item) {
-        verticalFill(column, item, false);
+        verticalFill(column, item, true);
     }
 
     /**
@@ -477,9 +481,9 @@ public class GUI {
      * @param items The items you want to remove
      */
     public void remove(ItemStack @NotNull ... items) {
-        for(ItemStack i : items) {
-            getSlots(i).forEach(this::remove);
-        }
+        Arrays.stream(items).forEach(it -> {
+            slots(it).forEach(i -> remove(i));
+        });
     }
 
     /**
