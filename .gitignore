@@ -1,5 +1,7 @@
 .idea
 .vscode
-./target
+.apt_generated
+.apt_generated_tests
+/target
 GUI.iml
 GUI.xsd

@@ -192,6 +192,16 @@ public class GUI {
     }
 
     /**
+     * Get the first slot where an item is present
+     * 
+     * @param item The ItemStack on which to search for the slot
+     * @return     The first slot where the item is present
+     */
+    public @NotNull int slot(@NotNull ItemStack item) {
+        return slots(item).stream().findFirst().orElse(-1);
+    }
+
+    /**
      * Get slots where an item is present as a Set
      * 
      * @param item The ItemStack on which to search for slots
@@ -200,6 +210,18 @@ public class GUI {
     public @NotNull Set<Integer> slots(@NotNull ItemStack item) {
         final Set<Integer> slots = new HashSet<>();
         IntStream.range(0, size).filter(i -> get(i) == item).forEach(slots::add);
+        return slots;
+    }
+
+    /**
+     * Get slots where some items are present as a Map
+     * 
+     * @param items The array of ItemStack on which to search for slots
+     * @return      All the slots where the items are present
+     */
+    public @NotNull Map<ItemStack, Set<Integer>> slots(@NotNull ItemStack[] items) {
+        final Map<ItemStack, Set<Integer>> slots = new HashMap<>();
+        Arrays.stream(items).forEach(it -> slots.put(it, slots(it)));
         return slots;
     }
 
@@ -396,10 +418,10 @@ public class GUI {
      * @param override Replace existing items if not null
      */
     public void horizontalFill(int row, ItemStack item, boolean override) {
-        ItemStack[] array = new ItemStack[9];
-        Arrays.stream(array).forEach(i -> i = item);
+        ItemStack[] items = new ItemStack[9];
+        Arrays.fill(items, item);
 
-        horizontalFill(row, array, override);
+        horizontalFill(row, items, override);
     }
 
     /**
@@ -446,10 +468,10 @@ public class GUI {
      * @param override Replace existing items if not null
      */
     public void verticalFill(int column, ItemStack item, boolean override) {
-        ItemStack[] array = new ItemStack[size / 6];
-        Arrays.stream(array).forEach(i -> i = item);
+        ItemStack[] items = new ItemStack[rows];
+        Arrays.fill(items, item);
 
-        verticalFill(column, array, override);
+        verticalFill(column, items, override);
     }
 
     /**
@@ -482,50 +504,8 @@ public class GUI {
      */
     public void remove(ItemStack @NotNull ... items) {
         Arrays.stream(items).forEach(it -> {
-            slots(it).forEach(i -> remove(i));
+            slots(it).forEach(this::remove);
         });
-    }
-
-    /**
-     * Get the item by the slot where the item should be
-     *
-     * @param slot The slot where the item should be placed
-     * @return The item of the slot where it's
-     */
-    public @Nullable ItemStack getItem(int slot) {
-        return inventory.getItem(slot);
-    }
-
-    /**
-     * Get the first slot where an item is present .<br>
-     *
-     * @param item The item you want to get slot at
-     * @return The slot where the item is placed.<br>
-     * Will return -1 if absent.
-     */
-    public int getSlot(ItemStack item) {
-        return getSlots(item).stream().findFirst().orElse(-1);
-    }
-
-    /**
-     * Get the slots where an item is present.<br>
-     * Will be empty if your item is not present in the GUI.
-     *
-     * @param item The item you want to get slots at
-     * @return A set of the slots where the item is placed
-     */
-    public Set<Integer> getSlots(ItemStack item) {
-        Set<Integer> slots = new HashSet<>();
-
-        IntStream.range(0, size).filter(i -> item == getItem(i)).forEach(slots::add);
-        return slots;
-    }
-
-    public Set<Integer> getSlots(ItemStack[] items) {
-        Set<Integer> slots = new HashSet<>();
-
-        IntStream.range(0, size).filter(i -> getItem(i) == Arrays.stream(items).filter(is -> is == getItem(i)).findFirst().orElse(null)).forEach(slots::add);
-        return slots;
     }
 
     /**
