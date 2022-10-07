@@ -3,13 +3,10 @@ package dev.ruster;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -443,8 +440,8 @@ public class GUI {
      * @param override Replace existing items if not null
      */
     public void verticalFill(int column, ItemStack[] items, boolean override) {
-        if(column < 0 || column > 7) {
-            throw new IllegalArgumentException("Column must be between 0 and 7");
+        if(column < 0 || column > 8) {
+            throw new IllegalArgumentException("Column must be between 0 and 8");
         }
         fill(column, column * 9 * rows, 9, items, override);
     }
@@ -490,7 +487,7 @@ public class GUI {
      * @param slot The slot where the item should be removed
      */
     public void remove(int slot) {
-        ItemStack item = getItem(slot);
+        ItemStack item = get(slot);
 
         if(item != null && item.getType() != Material.AIR) {
             inventory.remove(item);
@@ -503,9 +500,7 @@ public class GUI {
      * @param items The items you want to remove
      */
     public void remove(ItemStack @NotNull ... items) {
-        Arrays.stream(items).forEach(it -> {
-            slots(it).forEach(this::remove);
-        });
+        inventory.removeItem(items);
     }
 
     /**
@@ -588,7 +583,7 @@ public class GUI {
      * @return The slot is empty or not
      */
     public boolean isEmpty(int slot) {
-        ItemStack item = getItem(slot);
+        ItemStack item = get(slot);
         return item == null || item.getType() == Material.AIR;
     }
 
