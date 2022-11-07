@@ -1,17 +1,18 @@
 package dev.ruster;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -21,6 +22,7 @@ import java.util.stream.IntStream;
  * <p>GUI is a tiny Java API for Spigot and Paper made to build inventory easier</p>
  * <p>You're free to use and contribute to this project</p>
  * <p>For any question, bug or info, contact me from my GitHub down below</p>
+ *
  * @author RusterX16
  * @link <a href="https://gitub.com/rusterx16/GUI">github</a>
  */
@@ -33,23 +35,14 @@ public class GUI {
      * A static List of GUI that contains all GUI instance to recover instances from inventories
      */
     public static final List<GUI> GUI_LIST = new LinkedList<>();
-
-    /**
-     * Get the instance of GUI that match with a given inventory in parameter
-     * 
-     * @param inventory The inventory to get the GUI from
-     * @return          The instance of GUI if matches, null otherwise
-     */
-    public static GUI getFromInventory(@NotNull Inventory inventory) {
-        return GUI_LIST.stream()
-                .filter(gui -> gui.inventory.equals(inventory))
-                .findFirst()
-                .orElse(null);
-    }
     /**
      * The bukkit inventory instance
      */
     private final Inventory inventory;
+    /**
+     * Tht inventory type
+     */
+    private InventoryType inventoryType;
     /**
      * The name displayed at the top of the inventory
      */
@@ -70,43 +63,50 @@ public class GUI {
      * The GUI that comes before this
      */
     @Setter private GUI previousGUI;
-
     /**
      * The GUI that comes after this
      */
     @Setter private GUI nextGUI;
 
     /**
-     * Create a new GUI inventory for a owner
+     * Create a new GUI inventory for an owner
      *
-     * @param name  The name displayed at the top of the inventory
-     * @param rows  The number of row of the inventory : between 1 and 6
-     * @param owner The owner of the inventory
+     * @param inventoryType The type of inventory you want to build (Chest, Anvil, ...)
+     * @param name          The name displayed at the top of the inventory
+     * @param owner         The owner of the inventory, could be null
      */
-    @Contract(pure = true)
-    public GUI(String name, int rows, Player owner) {
-        if(rows < 0 || rows > 6) {
-            throw new IllegalArgumentException("GUI must contain between 1 and 6 rows");
+    public GUI(InventoryType inventoryType, String name, Player owner) {
+        if (owner != null) {
+            this.owner = owner;
         }
-        if(owner != null) {
+        this.inventoryType = inventoryType;
+        this.name = name;
+        this.size = inventoryType.getDefaultSize();
+        this.rows = size / 9;
+        inventory = Bukkit.createInventory(owner, inventoryType, Component.text(name));
+        GUI_LIST.add(this);
+    }
+
+    public GUI(int size, String name, Player owner) {
+        if (owner != null) {
             this.owner = owner;
         }
         this.name = name;
-        this.rows = rows;
-        size = rows * 9;
-        inventory = Bukkit.createInventory(owner, size, name);
+        this.size = size;
+        this.rows = size / 9;
+        inventory = Bukkit.createInventory(owner, size, Component.text(name));
         GUI_LIST.add(this);
     }
 
     /**
      * Create a new GUI inventory
      *
-     * @param name The name displayed at the top of the inventory
-     * @param rows The number of rows of the inventory : between 1 and 6
+     * @param inventoryType The inventoryType of inventory you want to build (Chest, Anvil, ...)
+     * @param name          The name displayed at the top of the inventory
      */
     @Contract(pure = true)
-    public GUI(String name, int rows) {
-        this(name, rows, null);
+    public GUI(InventoryType inventoryType, String name) {
+        this(inventoryType, name, null);
     }
 
     /**
@@ -117,8 +117,9 @@ public class GUI {
     @Contract(pure = true)
     public GUI(@NotNull GUI gui) {
         inventory = gui.inventory;
-        owner = gui.owner;
+        inventoryType = gui.inventoryType;
         name = gui.name;
+        owner = gui.owner;
         size = gui.size;
         rows = gui.rows;
         previousGUI = gui.previousGUI;
@@ -127,12 +128,25 @@ public class GUI {
     }
 
     /**
+     * Get the instance of GUI that match with a given inventory in parameter
+     *
+     * @param inventory The inventory to get the GUI from
+     * @return The instance of GUI if matches, null otherwise
+     */
+    public static GUI getFromInventory(@NotNull Inventory inventory) {
+        return GUI_LIST.stream()
+                .filter(gui -> gui.inventory.equals(inventory))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Add items to the inventory from the top left to the bottom right
      *
      * @param items The items you want to add
      */
     public void add(@NotNull ItemStack... items) {
-        if(Arrays.stream(items).anyMatch(i -> i == null || i.getType() == Material.AIR)) {
+        if (Arrays.stream(items).anyMatch(i -> i.getType() == Material.AIR)) {
             throw new IllegalArgumentException("Use remove method to remove an item from inventory");
         }
         inventory.addItem(items);
@@ -154,11 +168,11 @@ public class GUI {
      * @param slots The slots where the item should be added
      */
     public void set(@NotNull ItemStack item, int @NotNull ... slots) {
-        if(item.getType() == Material.AIR) {
+        if (item.getType() == Material.AIR) {
             throw new IllegalArgumentException("Use remove method to remove an item from inventory");
         }
-        for(int i : slots) {
-            if(i < 0 || i > size) {
+        for (int i : slots) {
+            if (i < 0 || i > size) {
                 throw new ArrayIndexOutOfBoundsException("slot is out of bounds");
             }
             inventory.setItem(i, item);
@@ -171,18 +185,18 @@ public class GUI {
      * @param material The material of the item
      * @param slots    The slots where the item should be added
      */
-    public void set(@NotNull Material material, int... slots) {
+    public void set(@NotNull Material material, int @NotNull ... slots) {
         set(new ItemStack(material), slots);
     }
 
     /**
      * Get the ItemStack related to the given slot
-     * 
+     *
      * @param slot The slot where to get the ItemStack
-     * @return The ItemStack 
+     * @return The ItemStack
      */
     public ItemStack get(int slot) {
-        if(slot < 0 || slot >= size) {
+        if (slot < 0 || slot >= size) {
             throw new IllegalArgumentException("Given slot out of bound");
         }
         return inventory.getItem(slot);
@@ -190,35 +204,37 @@ public class GUI {
 
     /**
      * Get the first slot where an item is present
-     * 
+     *
      * @param item The ItemStack on which to search for the slot
-     * @return     The first slot where the item is present
+     * @return The first slot where the item is present.<br>Will return <b>-1</b> if the item is not present
      */
-    public @NotNull int slot(@NotNull ItemStack item) {
+    public int slot(@NotNull ItemStack item) {
         return slots(item).stream().findFirst().orElse(-1);
     }
 
     /**
      * Get slots where an item is present as a Set
-     * 
+     *
      * @param item The ItemStack on which to search for slots
-     * @return     All the slots where the item is present 
+     * @return All the slots where the item is present
      */
     public @NotNull Set<Integer> slots(@NotNull ItemStack item) {
         final Set<Integer> slots = new HashSet<>();
         IntStream.range(0, size).filter(i -> get(i) == item).forEach(slots::add);
+
         return slots;
     }
 
     /**
      * Get slots where some items are present as a Map
-     * 
+     *
      * @param items The array of ItemStack on which to search for slots
-     * @return      All the slots where the items are present
+     * @return All the slots where the items are present
      */
     public @NotNull Map<ItemStack, Set<Integer>> slots(@NotNull ItemStack[] items) {
         final Map<ItemStack, Set<Integer>> slots = new HashMap<>();
         Arrays.stream(items).forEach(it -> slots.put(it, slots(it)));
+
         return slots;
     }
 
@@ -234,7 +250,7 @@ public class GUI {
 
     /**
      * Fill the inventory with item type array from a start index to an end index and a given step
-     * 
+     *
      * @param start    The start index
      * @param end      The end index
      * @param step     The step
@@ -242,12 +258,12 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int start, int end, int step, ItemStack @NotNull [] items, boolean override) {
-        if(start < 0 || start >= size || end >= size || end < 0) {
+        if (start < 0 || start >= size || end >= size || end < 0) {
             throw new ArrayIndexOutOfBoundsException("Index out of bound");
         }
-        for(int i = Math.min(start, end); i < Math.max(start, end); i += step) {
-            for(ItemStack it : items) {
-                if(!isEmpty(i) && !override) {
+        for (int i = Math.min(start, end); i < Math.max(start, end); i += step) {
+            for (ItemStack it : items) {
+                if (!isEmpty(i) && !override) {
                     continue;
                 }
                 set(it, i);
@@ -257,7 +273,7 @@ public class GUI {
 
     /**
      * Fill the inventory with item type array from a start index to an index and a given step
-     * 
+     *
      * @param start The start indenx
      * @param end   The end index
      * @param step  The step
@@ -269,14 +285,14 @@ public class GUI {
 
     /**
      * Fill the inventory with item type array from a start index to an end index
-     * 
+     *
      * @param start    The start index
      * @param end      The end index
      * @param items    The ItemStack array to fill with
      * @param override Override if an item is already present
      */
     public void fill(int start, int end, ItemStack @NotNull [] items, boolean override) {
-        fill(start, end, 1, items);
+        fill(start, end, 1, items, override);
     }
 
     /**
@@ -298,10 +314,8 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int @NotNull [] slots, ItemStack[] items, boolean override) {
-        if(slots.length == 0) {
-            return;
-        }
-        Arrays.stream(slots).filter(i -> override).forEach(i -> Arrays.stream(items).forEach(it -> set(it, i)));
+        fill(slots[0], slots[slots.length - 1], items, override);
+        // Arrays.stream(slots).filter(i -> override).forEach(i -> Arrays.stream(items).forEach(it -> set(it, i)));
     }
 
     /**
@@ -323,10 +337,7 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int start, int end, ItemStack item, boolean override) {
-        if(!override) {
-            return;
-        }
-        fill(start, end, new ItemStack[]{item});
+        fill(start, end, new ItemStack[]{item}, override);
     }
 
     /**
@@ -348,10 +359,7 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int @NotNull [] slots, ItemStack item, boolean override) {
-        if(!override) {
-            return;
-        }
-        fill(slots, new ItemStack[]{item});
+        fill(slots, new ItemStack[]{item}, override);
     }
 
     /**
@@ -371,7 +379,7 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(ItemStack item, boolean override) {
-        fill(0, size, item);
+        fill(0, size, item, override);
     }
 
     /**
@@ -391,7 +399,7 @@ public class GUI {
      * @param override Replace existing items if no null
      */
     public void horizontalFill(int row, ItemStack[] items, boolean override) {
-        if(row < 0 || row > 5) {
+        if (row < 0 || row > 5) {
             throw new IllegalArgumentException("Row must be between 0 and 5");
         }
         fill(row * 9, row * 9 + 9, items, override);
@@ -440,7 +448,7 @@ public class GUI {
      * @param override Replace existing items if not null
      */
     public void verticalFill(int column, ItemStack[] items, boolean override) {
-        if(column < 0 || column > 8) {
+        if (column < 0 || column > 8) {
             throw new IllegalArgumentException("Column must be between 0 and 8");
         }
         fill(column, column * 9 * rows, 9, items, override);
@@ -489,7 +497,7 @@ public class GUI {
     public void remove(int slot) {
         ItemStack item = get(slot);
 
-        if(item != null && item.getType() != Material.AIR) {
+        if (item != null && item.getType() != Material.AIR) {
             inventory.remove(item);
         }
     }
@@ -516,7 +524,7 @@ public class GUI {
      * Open the GUI to the owner
      */
     public void open() {
-        if(owner == null) {
+        if (owner == null) {
             throw new NullPointerException("Owner of the GUI is null");
         }
         open(owner);
@@ -528,7 +536,7 @@ public class GUI {
      * @param player The player to open the next GUI
      */
     public void openPreviousGUI(Player player) {
-        if(previousGUI == null) {
+        if (previousGUI == null) {
             throw new NullPointerException("Previous GUI is null");
         }
         previousGUI.open(player);
@@ -547,7 +555,7 @@ public class GUI {
      * @param player The player to open the next GUI
      */
     public void openNextGUI(@NotNull Player player) {
-        if(nextGUI == null) {
+        if (nextGUI == null) {
             throw new NullPointerException("Next GUI is null");
         }
         nextGUI.open(player);
@@ -591,7 +599,7 @@ public class GUI {
      * Close the GUI for the owner
      */
     public void close() {
-        if(owner == null) {
+        if (owner == null) {
             throw new NullPointerException("Owner of the GUI is null");
         }
         close(owner);
