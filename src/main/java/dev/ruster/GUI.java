@@ -94,13 +94,13 @@ public class GUI {
      * @param name  The name displayed at the top of the inventory
      * @param owner The owner of the inventory, could be null
      */
-    public GUI(int size, String name, Player owner) {
+    public GUI(int rows, String name, Player owner) {
         if (owner != null) {
             this.owner = owner;
         }
         this.name = name;
-        this.size = size;
-        this.rows = size / 9;
+        this.rows = rows;
+        this.size = rows * 9;
         inventory = Bukkit.createInventory(owner, size, Component.text(name));
         GUI_LIST.add(this);
     }
@@ -122,8 +122,8 @@ public class GUI {
      * @param size The size of the inventory in [9, 18, 27, 36, 45, 54]
      * @param name The name displayed at the top of the inventory
      */
-    public GUI(int size, String name) {
-        this(size, name, null);
+    public GUI(int rows, String name) {
+        this(rows, name, null);
     }
 
     /**
@@ -275,7 +275,7 @@ public class GUI {
      * @param override Override if an item is already present
      */
     public void fill(int start, int end, int step, ItemStack @NotNull [] items, boolean override) {
-        if (start < 0 || start >= size || end >= size || end < 0) {
+        if (start < 0 || start > size || end > size || end < 0) {
             throw new ArrayIndexOutOfBoundsException("Index out of bound");
         }
         for (int i = Math.min(start, end); i < Math.max(start, end); i += step) {
