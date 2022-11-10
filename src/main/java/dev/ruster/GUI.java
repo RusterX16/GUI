@@ -87,6 +87,13 @@ public class GUI {
         GUI_LIST.add(this);
     }
 
+    /**
+     * Create a new GUI inventory for an owner
+     *
+     * @param size  The size of the inventory in [9, 18, 27, 36, 45, 54]
+     * @param name  The name displayed at the top of the inventory
+     * @param owner The owner of the inventory, could be null
+     */
     public GUI(int size, String name, Player owner) {
         if (owner != null) {
             this.owner = owner;
@@ -107,6 +114,16 @@ public class GUI {
     @Contract(pure = true)
     public GUI(InventoryType inventoryType, String name) {
         this(inventoryType, name, null);
+    }
+
+    /**
+     * Create a new GUI inventory
+     *
+     * @param size The size of the inventory in [9, 18, 27, 36, 45, 54]
+     * @param name The name displayed at the top of the inventory
+     */
+    public GUI(int size, String name) {
+        this(size, name, null);
     }
 
     /**
