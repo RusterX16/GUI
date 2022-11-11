@@ -409,6 +409,25 @@ public class GUI {
     }
 
     /**
+     * Fill the whole inventory with item type array
+     *
+     * @param material The material to fill with
+     * @param override Override if an item is already present
+     */
+    public void fill(Material material, boolean override) {
+        fill(new ItemStack(material), override);
+    }
+
+    /**
+     * Fill the whole inventory with item type array
+     *
+     * @param material The material to fill with
+     */
+    public void fill(Material material) {
+        fill(new ItemStack(material));
+    }
+
+    /**
      * Place items in a straight horizontal line in the GUI
      *
      * @param row      The row where to place the items
