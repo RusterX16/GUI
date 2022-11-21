@@ -90,7 +90,7 @@ public class GUI {
     /**
      * Create a new GUI inventory for an owner
      *
-     * @param size  The size of the inventory in [9, 18, 27, 36, 45, 54]
+     * @param rows  The size of the inventory in [9, 18, 27, 36, 45, 54]
      * @param name  The name displayed at the top of the inventory
      * @param owner The owner of the inventory, could be null
      */
@@ -119,7 +119,7 @@ public class GUI {
     /**
      * Create a new GUI inventory
      *
-     * @param size The size of the inventory in [9, 18, 27, 36, 45, 54]
+     * @param rows The size of the inventory in [9, 18, 27, 36, 45, 54]
      * @param name The name displayed at the top of the inventory
      */
     public GUI(int rows, String name) {
